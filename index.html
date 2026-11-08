@@ -329,6 +329,13 @@ footer{padding:90px 0 40px}
 </div></footer>
 
 <script>
+/* ===== Заявки в Telegram ===== */
+const TG_TOKEN="ВСТАВЬ_ТОКЕН_СЮДА";
+const TG_CHAT="1088958554";
+function sendTG(text){
+ if(TG_TOKEN.includes("ВСТАВЬ"))return Promise.resolve(false);
+ return fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`,{method:"POST",body:new URLSearchParams({chat_id:TG_CHAT,text})}).then(r=>r.ok).catch(()=>false);
+}
 const $=id=>document.getElementById(id),fmt=n=>n.toLocaleString("ru-RU")+" ₽";
 const price={
  hair:[["Женская стрижка","с укладкой",2500],["Мужская стрижка","машинка и ножницы",1600],["Окрашивание в один тон","любая длина",4500],["AirTouch / балаяж","сложное окрашивание",9800],["Кератиновое восстановление","глубокий уход",5500]],
@@ -384,7 +391,11 @@ function go(n){step=n;document.querySelectorAll(".step").forEach(s=>s.classList.
  if(n===1)renderMasters();if(n===2&&st.day===null){pick($("days"),$("days").children[0],"day");st.day=0;renderTimes()}
  if(n===3)$("sumry").innerHTML=`<div><span>Услуга</span><b>${st.svc.n}</b></div><div><span>Мастер</span><b>${st.mst}</b></div><div><span>Когда</span><b>${dLabel()}, ${st.time}</b></div><div><span>Стоимость</span><b>${fmt(st.svc.p)}</b></div>`;
  valid()}
-$("next").onclick=()=>{if(step<3)return go(step+1);$("flow").style.display="none";$("success").style.display="block";$("okText").textContent=`${$("nm").value.trim()}, ждём вас ${dLabel()} в ${st.time}. Напомним о визите за день.`};
+$("next").onclick=async()=>{if(step<3)return go(step+1);
+ const nm=$("nm").value.trim(),ph=$("ph").value.trim();
+ $("next").disabled=true;$("next").textContent="Отправляем…";
+ await sendTG(`🌸 Новая запись — салон «Шёлк»\n\nУслуга: ${st.svc.n}\nМастер: ${st.mst}\nКогда: ${dLabel()}, ${st.time}\nСтоимость: ${fmt(st.svc.p)}\n\nИмя: ${nm}\nТелефон: ${ph}`);
+ $("flow").style.display="none";$("success").style.display="block";$("okText").textContent=`${nm}, ждём вас ${dLabel()} в ${st.time}. Напомним о визите за день.`};
 $("back").onclick=()=>go(step-1);
 
 // ui
